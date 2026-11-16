@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DropCRM AI — Dashboard V32 | Shopify • Dropanas • Tealca</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Supabase JS SDK v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Chart.js para analíticas -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            carbon: {
+              950: '#08080a',
+              900: '#0d0d11',
+              850: '#121217',
+              800: '#18181f',
+              700: '#22222c',
+            },
+            accent: {
+              400: '#fb923c',
+              500: '#f97316',
+              600: '#ea580c',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #08080a;
+      color: #f4f4f5;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(249, 115, 22, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(245, 158, 11, 0.06) 0%, transparent 45%);
+      overflow-x: hidden;
+    }
+
+    /* Glassmorphism Dashboard V32 */
+    .glass-card {
+      background: linear-gradient(145deg, rgba(24, 24, 31, 0.72) 0%, rgba(14, 14, 18, 0.85) 100%);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7), inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .glass-card-hover:hover {
+      transform: translateY(-4px);
+      border-color: rgba(249, 115, 22, 0.35);
+      box-shadow: 0 16px 36px -12px rgba(249, 115, 22, 0.18), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .glass-sidebar {
+      background: linear-gradient(180deg, rgba(16, 16, 21, 0.92) 0%, rgba(10, 10, 13, 0.97) 100%);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .glass-input {
+      background: rgba(10, 10, 14, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      color: #f4f4f5;
+      transition: all 0.2s ease;
+    }
+
+    .glass-input:focus {
+      outline: none;
+      border-color: #f97316;
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+      background: rgba(15, 15, 20, 0.95);
+    }
+
+    .nav-item-active {
+      background: linear-gradient(90deg, rgba(249, 115, 22, 0.18) 0%, rgba(249, 115, 22, 0.03) 100%);
+      border-left: 3px solid #f97316;
+      color: #fb923c;
+    }
+
+    /* Reloj digital estilo retro-moderno V32 */
+    .digital-clock-box {
+      background: linear-gradient(180deg, rgba(249, 115, 22, 0.12) 0%, rgba(12, 12, 15, 0.9) 100%);
+      border: 1px solid rgba(249, 115, 22, 0.25);
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(249, 115, 22, 0.08);
+    }
+
+    /* Scrollbar personalizada */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0a0a0d;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #272732;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #f97316;
+    }
+
+    /* Toggle Switch */
+    .toggle-checkbox:checked {
+      right: 0;
+      border-color: #f97316;
+    }
+    .toggle-checkbox:checked + .toggle-label {
+      background-color: #f97316;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col lg:flex-row antialiased selection:bg-orange-500 selection:text-white">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Mobile Top Header -->
+  <div class="lg:hidden flex items-center justify-between px-4 py-3 glass-sidebar border-b border-white/10 sticky top-0 z-30">
+    <div class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg shadow-orange-500/20">
+        <i data-lucide="boxes" class="w-5 h-5 text-white"></i>
+      </div>
+      <div>
+        <span class="font-bold text-base tracking-tight text-white">DropCRM <span class="text-orange-500">AI</span></span>
+        <span class="block text-[10px] text-zinc-400 font-mono">V32 • LIVE SYNC</span>
+      </div>
+    </div>
+    <button onclick="toggleMobileSidebar()" class="p-2 rounded-xl bg-white/5 border border-white/10 text-zinc-300">
+      <i data-lucide="menu" class="w-5 h-5"></i>
+    </button>
+  </div>
+
+  <!-- SIDEBAR IZQUIERDA (Estilo Dashboard V32) -->
+  <aside id="sidebar" class="fixed lg:sticky top-0 left-0 z-40 h-screen w-72 glass-sidebar flex flex-col justify-between transition-transform duration-300 -translate-x-full lg:translate-x-0 shrink-0">
+    <div>
+      <!-- Brand Header -->
+      <div class="p-6 border-b border-white/5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg shadow-orange-500/30">
+            <i data-lucide="cpu" class="w-5 h-5 text-white"></i>
+          </div>
+          <div>
+            <h1 class="font-extrabold text-lg tracking-tight text-white leading-none">DropCRM <span class="text-orange-500">AI</span></h1>
+            <p class="text-[11px] text-zinc-400 font-mono mt-1">DASHBOARD V32</p>
+          </div>
+        </div>
+        <button onclick="toggleMobileSidebar()" class="lg:hidden text-zinc-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Status Pill -->
+      <div class="px-5 pt-4">
+        <div id="connection-badge" class="px-3 py-2 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2">
+            <span id="conn-dot" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+            <span id="conn-text" class="text-zinc-300 font-medium">Modo Demo Local</span>
+          </div>
+          <span class="font-mono text-[10px] text-zinc-500">n8n</span>
+        </div>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="p-4 space-y-1.5 mt-2">
+        <p class="px-3 text-[10px] font-mono uppercase tracking-wider text-zinc-500 mb-2">Módulos Principales</p>
+        
+        <button onclick="switchTab('overview')" id="nav-overview" class="nav-btn nav-item-active w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-medium transition-all">
+          <span class="flex items-center gap-3">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+            Overview
+          </span>
+          <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400">KPI</span>
+        </button>
+
+        <button onclick="switchTab('pedidos')" id="nav-pedidos" class="nav-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/[0.04] transition-all">
+          <span class="flex items-center gap-3">
+            <i data-lucide="package-check" class="w-4 h-4"></i>
+            Pedidos CRM
+          </span>
+          <span id="badge-total-pedidos" class="text-[11px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-zinc-200">0</span>
+        </button>
+
+        <button onclick="switchTab('nuevo')" id="nav-nuevo" class="nav-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/[0.04] transition-all">
+          <span class="flex items-center gap-3">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            Nuevo Pedido
+          </span>
+          <span class="text-[10px] font-mono text-zinc-500">+ADD</span>
+        </button>
+
+        <p class="px-3 text-[10px] font-mono uppercase tracking-wider text-zinc-500 mt-5 mb-2">Automatización & API</p>
+
+        <button onclick="switchTab('agente')" id="nav-agente" class="nav-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/[0.04] transition-all">
+          <span class="flex items-center gap-3">
+            <i data-lucide="bot" class="w-4 h-4"></i>
+            Agente IA & WhatsApp
+          </span>
+          <span id="badge-escalados" class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400">0</span>
+        </button>
+
+        <button onclick="switchTab('config')" id="nav-config" class="nav-btn w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/[0.04] transition-all">
+          <span class="flex items-center gap-3">
+            <i data-lucide="sliders" class="w-4 h-4"></i>
+            Conexiones & Webhook
+          </span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Reloj Digital Retro-Moderno V32 en Footer del Sidebar -->
+    <div class="p-4 border-t border-white/5">
+      <div class="digital-clock-box rounded-2xl p-4 text-center">
+        <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 mb-1">
+          <span>HORA OPERATIVA</span>
+          <span class="text-orange-400">VET / COL</span>
+        </div>
+        <div id="sidebar-clock" class="font-mono text-3xl font-bold tracking-widest text-orange-400 drop-shadow-[0_0_8px_rgba(249,115,22,0.5)]">
+          17:23
+        </div>
+        <div id="sidebar-date" class="text-[11px] text-zinc-400 mt-1 capitalize">
+          Cargando fecha...
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto w-full">
+
+    <!-- Top Action Bar -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      <div>
+        <h2 id="page-title" class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Hola, Equipo Comercial 👋</h2>
+        <p id="page-subtitle" class="text-sm text-zinc-400 mt-1">Sincronización en vivo con Shopify, Dropanas, Tealca y Agente IA de WhatsApp.</p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2.5">
+        <button onclick="simularWebhookEntrante()" class="px-3.5 py-2.5 rounded-xl glass-card hover:border-orange-500/40 text-xs font-medium text-zinc-200 flex items-center gap-2 transition cursor-pointer">
+          <i data-lucide="zap" class="w-4 h-4 text-orange-400"></i>
+          Simular Pedido Shopify
+        </button>
+        <button onclick="exportarCSV()" class="px-3.5 py-2.5 rounded-xl glass-card hover:border-white/20 text-xs font-medium text-zinc-200 flex items-center gap-2 transition cursor-pointer">
+          <i data-lucide="download" class="w-4 h-4 text-emerald-400"></i>
+          Exportar CSV
+        </button>
+        <button onclick="switchTab('nuevo')" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-xs font-semibold text-white shadow-lg shadow-orange-500/25 flex items-center gap-2 transition cursor-pointer">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          Nuevo Pedido
+        </button>
+      </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- VISTA 1: OVERVIEW (DASHBOARD V32 KPI)      -->
+    <!-- ========================================== -->
+    <section id="view-overview" class="space-y-6">
+      
+      <!-- 4 Tarjetas KPI estilo código de referencia Dashboard V32 -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <!-- KPI 1 -->
+        <div class="glass-card glass-card-hover p-6 rounded-2xl">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-white/60">Ventas Totales (USD)</p>
+              <h2 id="kpi-ventas" class="text-2xl font-bold text-white mt-1 font-mono">$0.00</h2>
+              <p class="flex items-center gap-1 text-sm text-emerald-400 mt-2">
+                <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                <span>+18.4% esta semana</span>
+              </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-orange-500/15 border border-orange-500/30 flex items-center justify-center text-orange-400">
+              <i data-lucide="dollar-sign" class="w-6 h-6"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI 2 -->
+        <div class="glass-card glass-card-hover p-6 rounded-2xl">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-white/60">Ganancia Neta Estimada</p>
+              <h2 id="kpi-ganancia" class="text-2xl font-bold text-white mt-1 font-mono">$0.00</h2>
+              <p class="flex items-center gap-1 text-sm text-emerald-400 mt-2">
+                <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                <span id="kpi-margen">Margen 0%</span>
+              </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+              <i data-lucide="trending-up" class="w-6 h-6"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI 3 -->
+        <div class="glass-card glass-card-hover p-6 rounded-2xl">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-white/60">Pedidos Confirmados / Ruta</p>
+              <h2 id="kpi-confirmados" class="text-2xl font-bold text-white mt-1 font-mono">0 / 0</h2>
+              <p class="flex items-center gap-1 text-sm text-emerald-400 mt-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                <span id="kpi-tasa-conf">0% efectividad IA</span>
+              </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+            </div>
+          </div>
+        </div>
+
+        <!-- KPI 4 -->
+        <div class="glass-card glass-card-hover p-6 rounded-2xl">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm text-white/60">Escalados a Asesor (Llamada)</p>
+              <h2 id="kpi-escalados" class="text-2xl font-bold text-white mt-1 font-mono">0</h2>
+              <p class="flex items-center gap-1 text-sm text-rose-400 mt-2">
+                <i data-lucide="phone-call" class="w-4 h-4"></i>
+                <span>Bot pausado en chat</span>
+              </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400">
+              <i data-lucide="users" class="w-6 h-6"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráfica + Resumen Logístico -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Gráfico de Estados y Rendimiento -->
+        <div class="glass-card p-6 rounded-2xl lg:col-span-2 flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-semibold text-base text-white">Distribución de Pedidos por Estado Logístico</h3>
+              <p class="text-xs text-zinc-400">Seguimiento en tiempo real: Shopify → Agente IA → Dropanas / Tealca</p>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-mono">EN VIVO</span>
+          </div>
+          <div class="relative h-64 w-full">
+            <canvas id="ordersChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Panel Lateral: Actividad Reciente Agente IA -->
+        <div class="glass-card p-6 rounded-2xl flex flex-col">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="font-semibold text-base text-white flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-4 h-4 text-orange-400"></i>
+              Actividad del Agente IA
+            </h3>
+            <button onclick="switchTab('agente')" class="text-xs text-orange-400 hover:underline">Ver todo</button>
+          </div>
+          <div id="overview-ai-feed" class="space-y-3 overflow-y-auto max-h-64 pr-1">
+            <!-- Feed dinámico -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Últimos Pedidos en Overview -->
+      <div class="glass-card rounded-2xl overflow-hidden">
+        <div class="p-5 border-b border-white/5 flex items-center justify-between">
+          <h3 class="font-semibold text-white">Últimos Pedidos Entrantes</h3>
+          <button onclick="switchTab('pedidos')" class="text-xs text-orange-400 hover:text-orange-300 font-medium flex items-center gap-1">
+            Abrir tabla completa <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-white/[0.02] text-zinc-400 uppercase font-mono border-b border-white/5">
+              <tr>
+                <th class="p-4">Shopify / Dropanas</th>
+                <th class="p-4">Cliente & Teléfono</th>
+                <th class="p-4">Destino / Tealca</th>
+                <th class="p-4">Producto & Total</th>
+                <th class="p-4">Estado</th>
+                <th class="p-4 text-right">Gestión</th>
+              </tr>
+            </thead>
+            <tbody id="overview-recent-table" class="divide-y divide-white/5"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VISTA 2: TABLA COMPLETA DE PEDIDOS CRM     -->
+    <!-- ========================================== -->
+    <section id="view-pedidos" class="hidden space-y-5">
+      <!-- Barra de Búsqueda y Filtros -->
+      <div class="glass-card p-4 rounded-2xl flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+        <div class="relative flex-1">
+          <i data-lucide="search" class="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+          <input type="text" id="filter-search" oninput="renderTablaPedidos()" placeholder="Buscar por #Shopify, nombre, +58414..., cédula, guía Tealca o N° Dropanas..." class="glass-input w-full pl-10 pr-4 py-2.5 rounded-xl text-sm" />
+        </div>
+        
+        <div class="flex flex-wrap gap-2.5">
+          <select id="filter-estado" onchange="renderTablaPedidos()" class="glass-input px-3.5 py-2.5 rounded-xl text-xs font-medium">
+            <option value="">Todos los Estados</option>
+            <option value="Nuevo">Nuevo</option>
+            <option value="Contactado">Contactado</option>
+            <option value="Confirmado">Confirmado</option>
+            <option value="Enviado">Enviado</option>
+            <option value="En agencia">En agencia</option>
+            <option value="Entregado">Entregado</option>
+            <option value="No responde">No responde</option>
+            <option value="Cancelado">Cancelado</option>
+            <option value="Devuelto">Devuelto</option>
+          </select>
+
+          <select id="filter-origen" onchange="renderTablaPedidos()" class="glass-input px-3.5 py-2.5 rounded-xl text-xs font-medium">
+            <option value="">Todos los Orígenes</option>
+            <option value="landing">Landing</option>
+            <option value="botón de WhatsApp">Botón de WhatsApp</option>
+            <option value="anuncio">Anuncio</option>
+          </select>
+
+          <select id="filter-bot" onchange="renderTablaPedidos()" class="glass-input px-3.5 py-2.5 rounded-xl text-xs font-medium">
+            <option value="">Estado Agente IA</option>
+            <option value="true">Bot IA Activo</option>
+            <option value="false">Escalado a Asesor</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Tabla Principal con Scroll Horizontal Fluido -->
+      <div class="glass-card rounded-2xl overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs whitespace-nowrap">
+            <thead>
+              <tr class="bg-carbon-950/80 text-zinc-400 uppercase font-mono text-[11px] border-b border-white/10">
+                <th class="p-4">Pedido Shopify / Fecha</th>
+                <th class="p-4">Cliente & Cédula</th>
+                <th class="p-4">Teléfono & Canal</th>
+                <th class="p-4">Estado / Ciudad / Tealca</th>
+                <th class="p-4">Producto & Cant.</th>
+                <th class="p-4">Finanzas (USD/Bs)</th>
+                <th class="p-4">Estado Pedido</th>
+                <th class="p-4">Guía / Dropanas</th>
+                <th class="p-4">Origen / Campaña</th>
+                <th class="p-4 text-center">Agente IA</th>
+                <th class="p-4 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="crm-main-table" class="divide-y divide-white/[0.06]">
+              <!-- Filas generadas dinámicamente -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VISTA 3: NUEVO PEDIDO (ESTILO ADD PRODUCT) -->
+    <!-- ========================================== -->
+    <section id="view-nuevo" class="hidden">
+      <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        
+        <!-- Columna Izquierda (2/3): Formulario Completo -->
+        <form id="form-nuevo-pedido" onsubmit="guardarNuevoPedido(event)" class="glass-card p-6 rounded-2xl xl:col-span-2 space-y-6">
+          <div class="flex items-center justify-between border-b border-white/10 pb-4">
+            <div>
+              <h3 class="text-lg font-bold text-white">Registrar Pedido en CRM</h3>
+              <p class="text-xs text-zinc-400">Completa los datos de Shopify, cliente y logística Tealca. Se sincronizará con Supabase y n8n.</p>
+            </div>
+            <span class="px-3 py-1 rounded-full bg-orange-500/15 text-orange-400 font-mono text-xs border border-orange-500/30">pedidos_crm</span>
+          </div>
+
+          <!-- Bloque 1: Identificación y Origen -->
+          <div>
+            <h4 class="text-xs font-mono uppercase tracking-wider text-orange-400 mb-3">1. Identificación & Origen</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">N° Pedido Shopify *</label>
+                <input type="text" id="np-shopify" required placeholder="#SH-1050" oninput="actualizarLivePreview()" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm font-mono" />
+              </div>
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">N° Pedido Dropanas</label>
+                <input type="text" id="np-dropanas" placeholder="DRP-88412" oninput="actualizarLivePreview()" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm font-mono" />
+              </div>
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">Origen del Lead</label>
+                <select id="np-origen" onchange="actualizarLivePreview()" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm">
+                  <option value="landing">Landing</option>
+                  <option value="botón de WhatsApp">Botón de WhatsApp</option>
+                  <option value="anuncio">Anuncio</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">Campaña o Anuncio</label>
+                <input type="text" id="np-campana" placeholder="CBO_VENEZUELA_VIDEO_01" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">Fecha Estimada de Entrega</label>
+                <input type="date" id="np-fecha-entrega" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Bloque 2: Datos del Cliente -->
+          <div class="border-t border-white/10 pt-5">
+            <h4 class="text-xs font-mono uppercase tracking-wider text-orange-400 mb-3">2. Datos del Cliente</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">Nombre *</label>
+                <input type="text" id="np-nombre" required placeholder="Carlos" oninput="actualizarLivePreview()" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">Apellido *</label>
+                <input type="text" id="np-apellido" required placeholder="Mendoza" oninput="actualizarLivePreview()" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">Teléfono (+58414...) *</label>
+                <input type="text" id="np-telefono" required placeholder="+584141234567" oninput="actualizarLivePreview()" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm font-mono" />
+              </div>
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">Cédula o RIF</label>
+                <input type="text" id="np-cedula" placeholder="V-24.589.120" oninput="actualizarLivePreview()" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm font-mono" />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-xs text-zinc-400 mb-1.5">Correo Electrónico</label>
+                <input type="email" id="np-correo" placeholder="cliente@correo.com" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Bloque 3: Logística Tealca -->
+          <div class="border-t border-white/10 pt-5">
+            <h4 class="text-xs font-mono uppercase tracking-wider text-orange-400 mb-3">3. Destino & Agencia Tealca</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">Estado</label>
+                <input type="text" id="np-estado" placeholder="Carabobo" oninput="actualizarLivePreview()" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">Ciudad</label>
+                <input type="text" id="np-ciudad" placeholder="Valencia" oninput="actualizarLivePreview()" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">Agencia Tealca</label>
+                <input type="text" id="np-agencia" placeholder="Tealca Av. Bolívar Norte" oninput="actualizarLivePreview()" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">Guía de Tealca</label>
+                <input type="text" id="np-guia" placeholder="TLC-9048211" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm font-mono" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Bloque 4: Producto y Finanzas -->
+          <div class="border-t border-white/10 pt-5">
+            <h4 class="text-xs font-mono uppercase tracking-wider text-orange-400 mb-3">4. Producto, Costos & Estado</h4>
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              <div class="sm:col-span-2">
+                <label class="block text-xs text-zinc-400 mb-1.5">Producto *</label>
+                <input type="text" id="np-producto" required placeholder="Smartwatch Ultra Pro 2" oninput="actualizarLivePreview()" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">Cantidad</label>
+                <input type="number" id="np-cantidad" value="1" min="1" oninput="actualizarLivePreview()" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm font-mono" />
+              </div>
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">Moneda Pago</label>
+                <select id="np-moneda" onchange="actualizarLivePreview()" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm">
+                  <option value="USD">USD ($)</option>
+                  <option value="Bs">Bs (Bolívares)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">Monto en USD *</label>
+                <input type="number" step="0.01" id="np-monto" required placeholder="45.00" oninput="actualizarLivePreview()" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm font-mono" />
+              </div>
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">Costo Producto (USD)</label>
+                <input type="number" step="0.01" id="np-costo" placeholder="18.00" oninput="actualizarLivePreview()" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm font-mono" />
+              </div>
+              <div>
+                <label class="block text-xs text-zinc-400 mb-1.5">Estado del Pedido</label>
+                <select id="np-estado-pedido" onchange="actualizarLivePreview()" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm">
+                  <option value="Nuevo">Nuevo</option>
+                  <option value="Contactado">Contactado</option>
+                  <option value="Confirmado">Confirmado</option>
+                  <option value="Enviado">Enviado</option>
+                  <option value="En agencia">En agencia</option>
+                  <option value="Entregado">Entregado</option>
+                  <option value="No responde">No responde</option>
+                  <option value="Cancelado">Cancelado</option>
+                  <option value="Devuelto">Devuelto</option>
+                </select>
+              </div>
+              <div class="flex items-end pb-1">
+                <label class="flex items-center gap-2.5 cursor-pointer">
+                  <input type="checkbox" id="np-bot-activo" checked onchange="actualizarLivePreview()" class="w-4 h-4 accent-orange-500 rounded" />
+                  <span class="text-xs text-zinc-200 font-medium">Activar Agente IA</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <label class="block text-xs text-zinc-400 mb-1.5">Notas / Observaciones</label>
+              <textarea id="np-notas" rows="2" placeholder="Ej: Cliente prefiere entrega en la mañana, paga en efectivo USD..." class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm"></textarea>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+            <button type="button" onclick="document.getElementById('form-nuevo-pedido').reset(); actualizarLivePreview();" class="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-medium text-zinc-300 transition">
+              Limpiar
+            </button>
+            <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-xs font-bold text-white shadow-lg shadow-orange-500/25 flex items-center gap-2 transition cursor-pointer">
+              <i data-lucide="save" class="w-4 h-4"></i>
+              Guardar Pedido & Activar Flujo
+            </button>
+          </div>
+        </form>
+
+        <!-- Columna Derecha (1/3): Live Preview + Tips (Estilo exacto Dashboard V32) -->
+        <div class="space-y-6">
+          <!-- Preview Card -->
+          <div class="glass-card p-6 rounded-2xl">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-semibold text-white">Vista Previa en Vivo</h3>
+              <span id="prev-bot-badge" class="px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">🤖 IA ACTIVA</span>
+            </div>
+
+            <div class="rounded-xl bg-carbon-950/90 border border-white/10 p-5 space-y-4">
+              <div class="flex items-center justify-between">
+                <span id="prev-shopify" class="font-mono text-sm font-bold text-orange-400">#SH-1050</span>
+                <span id="prev-estado-badge" class="px-2.5 py-0.5 rounded-full text-[11px] bg-blue-500/15 text-blue-400 border border-blue-500/30">Nuevo</span>
+              </div>
+
+              <div>
+                <h4 id="prev-producto" class="font-bold text-base text-white">Smartwatch Ultra Pro 2</h4>
+                <p id="prev-cliente" class="text-xs text-zinc-400 mt-1">Carlos Mendoza • +584141234567</p>
+              </div>
+
+              <div class="p-3 rounded-lg bg-white/[0.03] border border-white/5 text-xs space-y-1">
+                <div class="flex justify-between">
+                  <span class="text-zinc-500">Agencia Tealca:</span>
+                  <span id="prev-agencia" class="text-zinc-200 font-medium">Sin asignar</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-zinc-500">Ciudad / Estado:</span>
+                  <span id="prev-ubicacion" class="text-zinc-200">Valencia, Carabobo</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-zinc-500">Origen:</span>
+                  <span id="prev-origen" class="text-orange-400 uppercase font-mono">landing</span>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t border-white/10 flex items-center justify-between">
+                <div>
+                  <span class="block text-[10px] text-zinc-500 uppercase">Total Venta</span>
+                  <span id="prev-monto" class="font-mono text-lg font-bold text-white">$45.00 USD</span>
+                </div>
+                <div class="text-right">
+                  <span class="block text-[10px] text-zinc-500 uppercase">Ganancia Est.</span>
+                  <span id="prev-ganancia" class="font-mono text-lg font-bold text-emerald-400">+$27.00</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tips Card (Igual al bloque Tips del Dashboard V32) -->
+          <div class="glass-card p-6 rounded-2xl">
+            <h3 class="text-sm font-semibold text-white flex items-center gap-2 mb-3">
+              <i data-lucide="lightbulb" class="w-4 h-4 text-amber-400"></i>
+              Tips Operativos n8n & Tealca
+            </h3>
+            <ul class="space-y-2.5 text-xs text-zinc-400 leading-relaxed">
+              <li class="flex items-start gap-2">
+                <span class="text-orange-400 mt-0.5">•</span>
+                Usa siempre el formato internacional <code class="text-zinc-200 font-mono">+58414...</code> para que Evolution API envíe la confirmación automática.
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-orange-400 mt-0.5">•</span>
+                Cuando el Agente IA confirme la cédula y agencia Tealca, el estado pasará a <span class="text-emerald-400 font-medium">Confirmado</span> listo para Dropanas.
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="text-orange-400 mt-0.5">•</span>
+                Si el cliente solicita llamada telefónica, el bot se pausará automáticamente y notificará al asesor.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VISTA 4: AGENTE IA & MONITOR WHATSAPP      -->
+    <!-- ========================================== -->
+    <section id="view-agente" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Estado de Arquitectura -->
+        <div class="glass-card p-6 rounded-2xl space-y-4">
+          <h3 class="font-bold text-white flex items-center gap-2">
+            <i data-lucide="network" class="w-5 h-5 text-orange-400"></i>
+            Pipeline de Inteligencia Artificial
+          </h3>
+          <div class="space-y-3 text-xs">
+            <div class="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between">
+              <div>
+                <p class="font-semibold text-white">Motor LLM (FFLLMAPI)</p>
+                <p class="font-mono text-[11px] text-zinc-400 mt-0.5">http://n8n-agente_freellmapi:3000/v1</p>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono">ONLINE</span>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between">
+              <div>
+                <p class="font-semibold text-white">Canal WhatsApp (Evolution API)</p>
+                <p class="font-mono text-[11px] text-zinc-400 mt-0.5">Webhook bidireccional n8n</p>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 font-mono">CONECTADO</span>
+            </div>
+
+            <div class="p-3.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between">
+              <div>
+                <p class="font-semibold text-white">Logística Dropanas & Tealca</p>
+                <p class="font-mono text-[11px] text-zinc-400 mt-0.5">Validación automática de agencia</p>
+              </div>
+              <span class="px-2 py-0.5 rounded bg-orange-500/15 text-orange-400 font-mono">SYNC</span>
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button onclick="simularRespuestaClienteWhatsApp()" class="w-full py-2.5 px-4 rounded-xl bg-orange-500/15 hover:bg-orange-500/25 border border-orange-500/30 text-orange-400 text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer">
+              <i data-lucide="message-square-plus" class="w-4 h-4"></i>
+              Simular Mensaje Entrante de WhatsApp
+            </button>
+          </div>
+        </div>
+
+        <!-- Cola de Clientes Escalados a Llamada / Asesor -->
+        <div class="glass-card p-6 rounded-2xl lg:col-span-2">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-bold text-white flex items-center gap-2">
+                <i data-lucide="phone-forwarded" class="w-5 h-5 text-rose-400"></i>
+                Clientes Escalados a Llamada / Encargado de Ventas
+              </h3>
+              <p class="text-xs text-zinc-400">Pedidos donde el Agente IA pausó su respuesta para intervención humana.</p>
+            </div>
+          </div>
+          <div id="escalados-list" class="space-y-3">
+            <!-- Tarjetas dinámicas de clientes escalados -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- VISTA 5: CONFIGURACIÓN & CONEXIONES        -->
+    <!-- ========================================== -->
+    <section id="view-config" class="hidden max-w-4xl">
+      <div class="glass-card p-6 sm:p-8 rounded-2xl space-y-6">
+        <div class="border-b border-white/10 pb-4">
+          <h3 class="text-xl font-bold text-white">Conexiones en Tiempo Real (Supabase & n8n)</h3>
+          <p class="text-xs text-zinc-400 mt-1">Conecta este panel con tu base de datos real de Supabase y los webhooks de tu instancia n8n (<code class="text-orange-400">carlos-bot.online</code>).</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label class="block text-xs font-medium text-zinc-300 mb-1.5">Supabase Project URL</label>
+            <input type="text" id="cfg-supabase-url" placeholder="https://xyzcompany.supabase.co" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm font-mono" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-zinc-300 mb-1.5">Supabase Anon Public Key</label>
+            <input type="password" id="cfg-supabase-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6..." class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm font-mono" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-zinc-300 mb-1.5">Webhook n8n (Notificar Cambios / Guía Tealca)</label>
+            <input type="text" id="cfg-n8n-webhook" placeholder="https://n8n.carlos-bot.online/webhook/crm-update" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm font-mono" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-zinc-300 mb-1.5">Teléfono Encargado de Ventas (Escalamientos)</label>
+            <input type="text" id="cfg-asesor-phone" placeholder="+584140000000" class="glass-input w-full px-3.5 py-2.5 rounded-xl text-sm font-mono" />
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200/90 flex items-start gap-3">
+          <i data-lucide="info" class="w-5 h-5 text-amber-400 shrink-0 mt-0.5"></i>
+          <div>
+            <p class="font-semibold text-amber-300">Modo Híbrido Inteligente</p>
+            <p class="mt-0.5">Si dejas los campos de Supabase vacíos, el CRM operará automáticamente en modo local con datos de prueba persistentes en tu navegador. Al guardar credenciales válidas de Supabase, se activará <strong>Supabase Realtime</strong> sobre la tabla <code class="font-mono">pedidos_crm</code>.</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-white/10">
+          <button onclick="resetearDatosDemo()" class="px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 text-xs font-medium transition cursor-pointer">
+            Restaurar Datos Demo
+          </button>
+          <button onclick="guardarConfiguracion()" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-xs font-bold text-white shadow-lg shadow-orange-500/25 transition cursor-pointer">
+            Guardar y Conectar
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- DRAWER LATERAL: DETALLE Y EDICIÓN COMPLETA -->
+  <!-- ========================================== -->
+  <div id="drawer-backdrop" onclick="cerrarDrawer()" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 hidden transition-opacity"></div>
+  <aside id="order-drawer" class="fixed top-0 right-0 z-50 h-screen w-full max-w-2xl glass-sidebar border-l border-white/10 shadow-2xl transform translate-x-full transition-transform duration-300 flex flex-col">
+    <!-- Drawer Header -->
+    <div class="p-6 border-b border-white/10 flex items-center justify-between bg-carbon-950/60">
+      <div>
+        <div class="flex items-center gap-2.5">
+          <span id="drw-header-shopify" class="font-mono text-lg font-bold text-orange-400">#SH-0000</span>
+          <span id="drw-header-estado" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/15 text-blue-400 border border-blue-500/30">Nuevo</span>
+        </div>
+        <p id="drw-header-fecha" class="text-xs text-zinc-400 mt-1">Fecha del pedido</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <a id="drw-btn-wa" href="#" target="_blank" class="px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center gap-1.5 transition">
+          <i data-lucide="message-circle" class="w-4 h-4"></i>
+          WhatsApp
+        </a>
+        <button onclick="cerrarDrawer()" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Drawer Body (Scrollable con los 27 campos) -->
+    <form id="form-editar-pedido" onsubmit="guardarEdicionDrawer(event)" class="flex-1 overflow-y-auto p-6 space-y-6">
+      <input type="hidden" id="ed-id" />
+
+      <!-- Control Rápido Agente IA y Escalamiento -->
+      <div class="p-4 rounded-2xl bg-white/[0.03] border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <p class="text-xs font-bold text-white flex items-center gap-2">
+            <i data-lucide="bot" class="w-4 h-4 text-orange-400"></i>
+            Control del Agente IA en WhatsApp
+          </p>
+          <p class="text-[11px] text-zinc-400 mt-0.5">Si se escala a llamada, el bot pausa sus respuestas automáticas.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-carbon-950 border border-white/10 cursor-pointer">
+            <input type="checkbox" id="ed-bot-activo" class="accent-orange-500 w-4 h-4" />
+            <span class="text-xs font-medium text-zinc-200">Bot Activo</span>
+          </label>
+          <button type="button" onclick="escalarPedidoDesdeDrawer()" class="px-3 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-rose-400 text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer">
+            <i data-lucide="phone-call" class="w-3.5 h-3.5"></i>
+            Escalar Llamada
+          </button>
+        </div>
+      </div>
+
+      <!-- Último mensaje del cliente -->
+      <div class="p-4 rounded-2xl bg-orange-500/[0.06] border border-orange-500/20">
+        <div class="flex items-center justify-between text-[11px] text-orange-300 font-mono mb-1">
+          <span>ÚLTIMO MENSAJE DEL CLIENTE</span>
+          <span id="ed-ultimo-contacto-info">Canal: WhatsApp • 0 intentos</span>
+        </div>
+        <p id="ed-ultimo-mensaje-display" class="text-xs text-zinc-200 italic">"Sin mensajes registrados aún."</p>
+      </div>
+
+      <!-- Datos del Cliente -->
+      <div>
+        <h4 class="text-xs font-mono uppercase text-orange-400 mb-3">Datos del Cliente</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">Nombre</label>
+            <input type="text" id="ed-nombre" class="glass-input w-full px-3 py-2 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">Apellido</label>
+            <input type="text" id="ed-apellido" class="glass-input w-full px-3 py-2 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">Teléfono (+58414...)</label>
+            <input type="text" id="ed-telefono" class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">Cédula o RIF</label>
+            <input type="text" id="ed-cedula" class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-[11px] text-zinc-400 mb-1">Correo</label>
+            <input type="email" id="ed-correo" class="glass-input w-full px-3 py-2 rounded-xl text-xs" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Logística Tealca y Dropanas -->
+      <div class="border-t border-white/10 pt-4">
+        <h4 class="text-xs font-mono uppercase text-orange-400 mb-3">Logística Tealca & Dropanas</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">Estado (Destino)</label>
+            <input type="text" id="ed-estado" class="glass-input w-full px-3 py-2 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">Ciudad</label>
+            <input type="text" id="ed-ciudad" class="glass-input w-full px-3 py-2 rounded-xl text-xs" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-[11px] text-zinc-400 mb-1">Agencia Tealca</label>
+            <input type="text" id="ed-agencia" class="glass-input w-full px-3 py-2 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">Guía de Tealca</label>
+            <input type="text" id="ed-guia" class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">N° Pedido en Dropanas</label>
+            <input type="text" id="ed-dropanas" class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">Fecha de Entrega</label>
+            <input type="date" id="ed-fecha-entrega" class="glass-input w-full px-3 py-2 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">Estado del Pedido</label>
+            <select id="ed-estado-pedido" class="glass-input w-full px-3 py-2 rounded-xl text-xs font-semibold">
+              <option value="Nuevo">Nuevo</option>
+              <option value="Contactado">Contactado</option>
+              <option value="Confirmado">Confirmado</option>
+              <option value="Enviado">Enviado</option>
+              <option value="En agencia">En agencia</option>
+              <option value="Entregado">Entregado</option>
+              <option value="No responde">No responde</option>
+              <option value="Cancelado">Cancelado</option>
+              <option value="Devuelto">Devuelto</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Producto, Finanzas y Seguimiento -->
+      <div class="border-t border-white/10 pt-4">
+        <h4 class="text-xs font-mono uppercase text-orange-400 mb-3">Producto, Finanzas & Seguimiento</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+          <div class="sm:col-span-2">
+            <label class="block text-[11px] text-zinc-400 mb-1">Producto</label>
+            <input type="text" id="ed-producto" class="glass-input w-full px-3 py-2 rounded-xl text-xs" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">Cantidad</label>
+            <input type="number" id="ed-cantidad" class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">Monto en USD</label>
+            <input type="number" step="0.01" id="ed-monto" class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">Costo Producto</label>
+            <input type="number" step="0.01" id="ed-costo" class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">Moneda de Pago</label>
+            <select id="ed-moneda" class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+              <option value="USD">USD</option>
+              <option value="Bs">Bs</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">Intentos Contacto</label>
+            <input type="number" id="ed-intentos" class="glass-input w-full px-3 py-2 rounded-xl text-xs font-mono" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">Último Canal</label>
+            <select id="ed-canal" class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="Llamada">Llamada</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-zinc-400 mb-1">Origen</label>
+            <select id="ed-origen" class="glass-input w-full px-3 py-2 rounded-xl text-xs">
+              <option value="landing">landing</option>
+              <option value="botón de WhatsApp">botón de WhatsApp</option>
+              <option value="anuncio">anuncio</option>
+            </select>
+          </div>
+          <div class="sm:col-span-3">
+            <label class="block text-[11px] text-zinc-400 mb-1">Campaña o Anuncio</label>
+            <input type="text" id="ed-campana" class="glass-input w-full px-3 py-2 rounded-xl text-xs" />
+          </div>
+          <div class="sm:col-span-3">
+            <label class="block text-[11px] text-zinc-400 mb-1">Notas del Pedido</label>
+            <textarea id="ed-notas" rows="2" class="glass-input w-full px-3 py-2 rounded-xl text-xs"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drawer Footer Actions -->
+      <div class="pt-4 border-t border-white/10 flex items-center justify-between gap-3 sticky bottom-0 bg-carbon-900/95 py-3">
+        <button type="button" onclick="registrarIntentoContacto()" class="px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-zinc-200 flex items-center gap-1.5 transition cursor-pointer">
+          <i data-lucide="phone-outgoing" class="w-3.5 h-3.5 text-amber-400"></i>
+          +1 Intento Contacto
+        </button>
+        <button type="submit" class="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-xs font-bold text-white shadow-lg shadow-orange-500/25 flex items-center gap-2 transition cursor-pointer">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          Guardar Cambios
+        </button>
+      </div>
+    </form>
+  </aside>
+
+  <!-- SCRIPTS DE LÓGICA DEL CRM -->
+  <script>
+    // ==========================================
+    // 1. DATOS DEMO INICIALES (27 CAMPOS EXACTOS)
+    // ==========================================
+    const INITIAL_DEMO_ORDERS = [
+      {
+        id: '101',
+        numero_pedido_shopify: '#SH-1048',
+        fecha_hora_pedido: '2026-11-15T14:20:00Z',
+        nombre: 'Alejandro',
+        apellido: 'Rivas',
+        telefono: '+584144892310',
+        cedula_o_rif: 'V-23.412.890',
+        correo: 'alejandro.rivas@gmail.com',
+        estado: 'Carabobo',
+        ciudad: 'Valencia',
+        agencia_tealca: 'Tealca Av. Bolívar Norte',
+        producto: 'Kit Herramientas Diagnóstico OBD2 Pro',
+        cantidad: 1,
+        monto_en_usd: 55.00,
+        moneda_pago: 'USD',
+        estado_del_pedido: 'Confirmado',
+        intentos_de_contacto: 1,
+        ultimo_contacto: '2026-11-15T14:25:00Z',
+        ultimo_canal: 'WhatsApp',
+        ultimo_mensaje_del_cliente: 'Sí perfecto, mi cédula es V-23.412.890 y retiro en Tealca Bolívar Norte.',
+        guia_tealca: 'TLC-8849201',
+        n_pedido_dropanas: 'DRP-55210',
+        costo_producto: 22.00,
+        ganancia_estimada: 33.00,
+        origen: 'anuncio',
+        campana_o_anuncio: 'CBO_CARABOBO_VIDEO_HOOK2',
+        notas: 'Confirmado por Agente IA. Listo para despacho.',
+        fecha_entrega: '2026-11-18',
+        bot_activo: true
+      },
+      {
+        id: '102',
+        numero_pedido_shopify: '#SH-1049',
+        fecha_hora_pedido: '2026-11-15T15:10:00Z',
+        nombre: 'Mariana',
+        apellido: 'Gómez',
+        telefono: '+584129876543',
+        cedula_o_rif: 'V-26.109.441',
+        correo: 'mariana.gz@hotmail.com',
+        estado: 'Zulia',
+        ciudad: 'Maracaibo',
+        agencia_tealca: 'Tealca Bella Vista',
+        producto: 'Combo Depiladora Láser IPL + Serum',
+        cantidad: 2,
+        monto_en_usd: 78.00,
+        moneda_pago: 'Bs',
+        estado_del_pedido: 'Contactado',
+        intentos_de_contacto: 2,
+        ultimo_contacto: '2026-11-15T15:40:00Z',
+        ultimo_canal: 'Llamada',
+        ultimo_mensaje_del_cliente: 'Quiero comprar 6 unidades al mayor, ¿me puede llamar un asesor?',
+        guia_tealca: '',
+        n_pedido_dropanas: 'DRP-55219',
+        costo_producto: 30.00,
+        ganancia_estimada: 48.00,
+        origen: 'landing',
+        campana_o_anuncio: 'LANDING_BELLEZA_NOV',
+        notas: 'ESCALADO A VENTAS: Solicita precio al por mayor y llamada.',
+        fecha_entrega: '2026-11-19',
+        bot_activo: false
+      },
+      {
+        id: '103',
+        numero_pedido_shopify: '#SH-1050',
+        fecha_hora_pedido: '2026-11-15T16:05:00Z',
+        nombre: 'José',
+        apellido: 'Pereira',
+        telefono: '+584241122334',
+        cedula_o_rif: 'V-19.876.543',
+        correo: 'jpereira.ve@gmail.com',
+        estado: 'Distrito Capital',
+        ciudad: 'Caracas',
+        agencia_tealca: 'Tealca Chacaíto',
+        producto: 'Smartwatch Ultra Titanium Series 9',
+        cantidad: 1,
+        monto_en_usd: 42.00,
+        moneda_pago: 'USD',
+        estado_del_pedido: 'Enviado',
+        intentos_de_contacto: 1,
+        ultimo_contacto: '2026-11-15T16:12:00Z',
+        ultimo_canal: 'WhatsApp',
+        ultimo_mensaje_del_cliente: 'Gracias por la guía, estaré pendiente en Chacaíto.',
+        guia_tealca: 'TLC-8849550',
+        n_pedido_dropanas: 'DRP-55233',
+        costo_producto: 16.50,
+        ganancia_estimada: 25.50,
+        origen: 'botón de WhatsApp',
+        campana_o_anuncio: 'WA_DIRECT_SMARTWATCH',
+        notas: 'Guía enviada por WhatsApp.',
+        fecha_entrega: '2026-11-17',
+        bot_activo: true
+      },
+      {
+        id: '104',
+        numero_pedido_shopify: '#SH-1051',
+        fecha_hora_pedido: '2026-11-15T17:02:00Z',
+        nombre: 'Valeria',
+        apellido: 'Castillo',
+        telefono: '+584167788990',
+        cedula_o_rif: '',
+        correo: 'valecastillo@gmail.com',
+        estado: 'Lara',
+        ciudad: 'Barquisimeto',
+        agencia_tealca: '',
+        producto: 'Corrector de Postura Inteligente',
+        cantidad: 1,
+        monto_en_usd: 29.00,
+        moneda_pago: 'USD',
+        estado_del_pedido: 'Nuevo',
+        intentos_de_contacto: 1,
+        ultimo_contacto: '2026-11-15T17:03:00Z',
+        ultimo_canal: 'WhatsApp',
+        ultimo_mensaje_del_cliente: 'Hola, acabo de hacer el pedido en la página.',
+        guia_tealca: '',
+        n_pedido_dropanas: '',
+        costo_producto: 10.00,
+        ganancia_estimada: 19.00,
+        origen: 'landing',
+        campana_o_anuncio: 'TRAFICO_FRIO_LARA',
+        notas: 'Agente IA solicitando cédula y agencia Tealca.',
+        fecha_entrega: '',
+        bot_activo: true
+      }
+    ];
+
+    let orders = [];
+    let supabaseClient = null;
+    let chartInstance = null;
+
+    // ==========================================
+    // 2. INICIALIZACIÓN Y RELOJ V32
+    // ==========================================
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      iniciarRelojDigital();
+      cargarConfiguracionGuardada();
+      inicializarDatos();
+    });
+
+    function iniciarRelojDigital() {
+      const updateClock = () => {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('sidebar-clock').textContent = `${hours}:${minutes}`;
+        
+        const options = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' };
+        document.getElementById('sidebar-date').textContent = now.toLocaleDateString('es-ES', options);
+      };
+      updateClock();
+      setInterval(updateClock, 1000);
+    }
+
+    // ==========================================
+    // 3. GESTIÓN DE CONEXIÓN (SUPABASE O LOCAL)
+    // ==========================================
+    function cargarConfiguracionGuardada() {
+      const url = localStorage.getItem('dropcrm_sb_url') || '';
+      const key = localStorage.getItem('dropcrm_sb_key') || '';
+      const webhook = localStorage.getItem('dropcrm_n8n_webhook') || '';
+      const phone = localStorage.getItem('dropcrm_asesor_phone') || '+584140000000';
+
+      document.getElementById('cfg-supabase-url').value = url;
+      document.getElementById('cfg-supabase-key').value = key;
+      document.getElementById('cfg-n8n-webhook').value = webhook;
+      document.getElementById('cfg-asesor-phone').value = phone;
+    }
+
+    async function inicializarDatos() {
+      const sbUrl = localStorage.getItem('dropcrm_sb_url');
+      const sbKey = localStorage.getItem('dropcrm_sb_key');
+
+      if (sbUrl && sbKey && window.supabase) {
+        try {
+          supabaseClient = window.supabase.createClient(sbUrl, sbKey);
+          const { data, error } = await supabaseClient
+            .from('pedidos_crm')
+            .select('*')
+            .order('fecha_hora_pedido', { ascending: false });
+
+          if (!error && data) {
+            orders = data;
+            setConnectionStatus(true, 'Supabase Realtime');
+            suscribirSupabaseRealtime();
+            refrescarTodaLaUI();
+            return;
+          }
+        } catch (err) {
+          console.warn('Fallo conexión Supabase, usando modo local:', err);
+        }
+      }
+
+      // Fallback a Modo Demo Local
+      const savedLocal = localStorage.getItem('dropcrm_orders_demo');
+      orders = savedLocal ? JSON.parse(savedLocal) : [...INITIAL_DEMO_ORDERS];
+      setConnectionStatus(false, 'Modo Demo Local');
+      refrescarTodaLaUI();
+    }
+
+    function suscribirSupabaseRealtime() {
+      if (!supabaseClient) return;
+      supabaseClient
+        .channel('public:pedidos_crm')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'pedidos_crm' }, async () => {
+          const { data } = await supabaseClient
+            .from('pedidos_crm')
+            .select('*')
+            .order('fecha_hora_pedido', { ascending: false });
+          if (data) {
+            orders = data;
+            refrescarTodaLaUI();
+            showToast('Base de datos actualizada en vivo', 'info');
+          }
+        })
+        .subscribe();
+    }
+
+    function setConnectionStatus(isOnline, label) {
+      const dot = document.getElementById('conn-dot');
+      const text = document.getElementById('conn-text');
+      text.textContent = label;
+      if (isOnline) {
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-500 animate-pulse';
+      } else {
+        dot.className = 'w-2 h-2 rounded-full bg-amber-500 animate-pulse';
+      }
+    }
+
+    function guardarConfiguracion() {
+      const url = document.getElementById('cfg-supabase-url').value.trim();
+      const key = document.getElementById('cfg-supabase-key').value.trim();
+      const webhook = document.getElementById('cfg-n8n-webhook').value.trim();
+      const phone = document.getElementById('cfg-asesor-phone').value.trim();
+
+      localStorage.setItem('dropcrm_sb_url', url);
+      localStorage.setItem('dropcrm_sb_key', key);
+      localStorage.setItem('dropcrm_n8n_webhook', webhook);
+      localStorage.setItem('dropcrm_asesor_phone', phone);
+
+      showToast('Configuración guardada. Reconectando...', 'success');
+      inicializarDatos();
+    }
+
+    function resetearDatosDemo() {
+      localStorage.removeItem('dropcrm_orders_demo');
+      orders = [...INITIAL_DEMO_ORDERS];
+      guardarEnLocal();
+      refrescarTodaLaUI();
+      showToast('Datos de demostración restaurados', 'info');
+    }
+
+    function guardarEnLocal() {
+      if (!supabaseClient) {
+        localStorage.setItem('dropcrm_orders_demo', JSON.stringify(orders));
+      }
+    }
+
+    // ==========================================
+    // 4. NAVEGACIÓN ENTRE PESTAÑAS
+    // ==========================================
+    function switchTab(tabName) {
+      const views = ['overview', 'pedidos', 'nuevo', 'agente', 'config'];
+      views.forEach(v => {
+        document.getElementById(`view-${v}`).classList.add('hidden');
+        const btn = document.getElementById(`nav-${v}`);
+        btn.classList.remove('nav-item-active', 'text-orange-400');
+        btn.classList.add('text-zinc-400');
+      });
+
+      document.getElementById(`view-${tabName}`).classList.remove('hidden');
+      const activeBtn = document.getElementById(`nav-${tabName}`);
+      activeBtn.classList.add('nav-item-active');
+      activeBtn.classList.remove('text-zinc-400');
+
+      const titles = {
+        overview: ['Hola, Equipo Comercial 👋', 'Métricas en tiempo real de Shopify, Dropanas, Tealca y Agente IA.'],
+        pedidos: ['Tabla Maestra de Pedidos CRM', 'Gestiona los 27 campos operativos, guías Tealca y estado de confirmación IA.'],
+        nuevo: ['Nuevo Pedido Manual / Shopify', 'Crea una orden y dispara la confirmación automática por WhatsApp.'],
+        agente: ['Centro de Control Agente IA & WhatsApp', 'Monitoreo de FFLLMAPI, Evolution API y escalamientos a llamadas humanas.'],
+        config: ['Conexiones & Webhooks n8n', 'Configura tus llaves de Supabase y endpoints de automatización.']
+      };
+
+      document.getElementById('page-title').textContent = titles[tabName][0];
+      document.getElementById('page-subtitle').textContent = titles[tabName][1];
+
+      // Cerrar sidebar en móvil
+      document.getElementById('sidebar').classList.add('-translate-x-full');
+      lucide.createIcons();
+    }
+
+    function toggleMobileSidebar() {
+      document.getElementById('sidebar').classList.toggle('-translate-x-full');
+    }
+
+    // ==========================================
+    // 5. RENDERIZADO DE UI, KPIS Y GRÁFICAS
+    // ==========================================
+    function refrescarTodaLaUI() {
+      actualizarKPIs();
+      renderGraficaEstados();
+      renderOverviewRecientes();
+      renderOverviewAIFeed();
+      renderTablaPedidos();
+      renderEscalados();
+      lucide.createIcons();
+    }
+
+    function getEstadoBadgeHTML(estado) {
+      const styles = {
+        'Nuevo': 'bg-blue-500/15 text-blue-400 border-blue-500/30',
+        'Contactado': 'bg-amber-500/15 text-amber-400 border-amber-500/30',
+        'Confirmado': 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
+        'Enviado': 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30',
+        'En agencia': 'bg-purple-500/15 text-purple-400 border-purple-500/30',
+        'Entregado': 'bg-teal-500/15 text-teal-400 border-teal-500/30',
+        'No responde': 'bg-orange-500/15 text-orange-400 border-orange-500/30',
+        'Cancelado': 'bg-rose-500/15 text-rose-400 border-rose-500/30',
+        'Devuelto': 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30',
+      };
+      const cls = styles[estado] || styles['Nuevo'];
+      return `<span class="px-2.5 py-1 rounded-full text-[11px] font-medium border ${cls}">${estado}</span>`;
+    }
+
+    function actualizarKPIs() {
+      const totalPedidos = orders.length;
+      const ventasTotales = orders.reduce((acc, o) => acc + Number(o.monto_en_usd || 0), 0);
+      const gananciaTotal = orders.reduce((acc, o) => acc + Number(o.ganancia_estimada || (o.monto_en_usd - o.costo_producto) || 0), 0);
+      const confirmados = orders.filter(o => ['Confirmado', 'Enviado', 'En agencia', 'Entregado'].includes(o.estado_del_pedido)).length;
+      const escalados = orders.filter(o => o.bot_activo === false).length;
+
+      document.getElementById('badge-total-pedidos').textContent = totalPedidos;
+      document.getElementById('badge-escalados').textContent = escalados;
+
+      document.getElementById('kpi-ventas').textContent = `$${ventasTotales.toFixed(2)}`;
+      document.getElementById('kpi-ganancia').textContent = `$${gananciaTotal.toFixed(2)}`;
+      const margen = ventasTotales > 0 ? ((gananciaTotal / ventasTotales) * 100).toFixed(1) : 0;
+      document.getElementById('kpi-margen').textContent = `Margen neto ${margen}%`;
+
+      document.getElementById('kpi-confirmados').textContent = `${confirmados} / ${totalPedidos}`;
+      const tasa = totalPedidos > 0 ? Math.round((confirmados / totalPedidos) * 100) : 0;
+      document.getElementById('kpi-tasa-conf').textContent = `${tasa}% efectividad IA`;
+      document.getElementById('kpi-escalados').textContent = escalados;
+    }
+
+    function renderGraficaEstados() {
+      const ctx = document.getElementById('ordersChart');
+      if (!ctx) return;
+
+      const estadosList = ['Nuevo', 'Contactado', 'Confirmado', 'Enviado', 'En agencia', 'Entregado', 'No responde', 'Cancelado'];
+      const counts = estadosList.map(est => orders.filter(o => o.estado_del_pedido === est).length);
+
+      if (chartInstance) chartInstance.destroy();
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: estadosList,
+          datasets: [{
+            label: 'Pedidos',
+            data: counts,
+            backgroundColor: [
+              'rgba(59, 130, 246, 0.7)',
+              'rgba(245, 158, 11, 0.7)',
+              'rgba(16, 185, 129, 0.85)',
+              'rgba(99, 102, 241, 0.7)',
+              'rgba(168, 85, 247, 0.7)',
+              'rgba(20, 184, 166, 0.8)',
+              'rgba(249, 115, 22, 0.7)',
+              'rgba(244, 63, 94, 0.7)'
+            ],
+            borderRadius: 8,
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { color: '#71717a', stepSize: 1, font: { family: 'JetBrains Mono', size: 11 } },
+              grid: { color: 'rgba(255,255,255,0.05)' }
+            },
+            x: {
+              ticks: { color: '#a1a1aa', font: { size: 11 } },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    function renderOverviewRecientes() {
+      const tbody = document.getElementById('overview-recent-table');
+      tbody.innerHTML = orders.slice(0, 5).map(o => `
+        <tr class="hover:bg-white/[0.03] transition cursor-pointer" onclick="abrirDrawer('${o.id}')">
+          <td class="p-4">
+            <span class="font-mono font-bold text-orange-400">${o.numero_pedido_shopify}</span>
+            <span class="block text-[11px] text-zinc-500 font-mono">${o.n_pedido_dropanas || 'Sin Dropanas'}</span>
+          </td>
+          <td class="p-4">
+            <span class="font-semibold text-white">${o.nombre} ${o.apellido}</span>
+            <span class="block font-mono text-[11px] text-zinc-400">${o.telefono}</span>
+          </td>
+          <td class="p-4">
+            <span class="text-zinc-200">${o.ciudad || 'N/D'}, ${o.estado || ''}</span>
+            <span class="block text-[11px] text-zinc-500">${o.agencia_tealca || 'Agencia pendiente'}</span>
+          </td>
+          <td class="p-4">
+            <span class="text-zinc-200 font-medium">${o.producto} (x${o.cantidad})</span>
+            <span class="block font-mono text-emerald-400 font-semibold">$${Number(o.monto_en_usd).toFixed(2)} ${o.moneda_pago}</span>
+          </td>
+          <td class="p-4">${getEstadoBadgeHTML(o.estado_del_pedido)}</td>
+          <td class="p-4 text-right">
+            <button class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-orange-500/20 text-zinc-300 hover:text-orange-400 transition">
+              Gestionar
+            </button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderOverviewAIFeed() {
+      const container = document.getElementById('overview-ai-feed');
+      container.innerHTML = orders.slice(0, 5).map(o => `
+        <div onclick="abrirDrawer('${o.id}')" class="p-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 cursor-pointer transition">
+          <div class="flex items-center justify-between text-[11px]">
+            <span class="font-semibold text-white">${o.nombre} ${o.apellido}</span>
+            <span class="font-mono ${o.bot_activo ? 'text-emerald-400' : 'text-rose-400'}">
+              ${o.bot_activo ? '🤖 IA Activa' : '📞 Escalado'}
+            </span>
+          </div>
+          <p class="text-[11px] text-zinc-400 line-clamp-2 mt-1">"${o.ultimo_mensaje_del_cliente || 'Esperando respuesta del cliente...'}"</p>
+        </div>
+      `).join('');
+    }
+
+    function renderTablaPedidos() {
+      const search = document.getElementById('filter-search').value.toLowerCase();
+      const fEstado = document.getElementById('filter-estado').value;
+      const fOrigen = document.getElementById('filter-origen').value;
+      const fBot = document.getElementById('filter-bot').value;
+
+      const filtered = orders.filter(o => {
+        const matchText = !search || [
+          o.numero_pedido_shopify, o.nombre, o.apellido, o.telefono,
+          o.cedula_o_rif, o.guia_tealca, o.n_pedido_dropanas, o.agencia_tealca, o.producto
+        ].some(val => String(val || '').toLowerCase().includes(search));
+
+        const matchEstado = !fEstado || o.estado_del_pedido === fEstado;
+        const matchOrigen = !fOrigen || o.origen === fOrigen;
+        const matchBot = !fBot || String(o.bot_activo) === fBot;
+
+        return matchText && matchEstado && matchOrigen && matchBot;
+      });
+
+      const tbody = document.getElementById('crm-main-table');
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11" class="p-8 text-center text-zinc-500">No se encontraron pedidos con los filtros actuales.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(o => {
+        const ganancia = Number(o.ganancia_estimada ?? (o.monto_en_usd - o.costo_producto)).toFixed(2);
+        const fechaFmt = o.fecha_hora_pedido ? new Date(o.fecha_hora_pedido).toLocaleString('es-VE', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-';
+
+        return `
+          <tr class="hover:bg-white/[0.03] transition group">
+            <td class="p-4">
+              <button onclick="abrirDrawer('${o.id}')" class="font-mono font-bold text-orange-400 hover:underline">${o.numero_pedido_shopify}</button>
+              <span class="block text-[11px] text-zinc-500 font-mono mt-0.5">${fechaFmt}</span>
+            </td>
+            <td class="p-4">
+              <div class="font-semibold text-white">${o.nombre} ${o.apellido}</div>
+              <div class="text-[11px] font-mono text-zinc-400">${o.cedula_o_rif || 'Sin Cédula'}</div>
+            </td>
+            <td class="p-4">
+              <a href="https://wa.me/${String(o.telefono).replace(/[^0-9]/g, '')}" target="_blank" class="font-mono text-emerald-400 hover:underline flex items-center gap-1">
+                ${o.telefono}
+              </a>
+              <span class="text-[11px] text-zinc-500">${o.ultimo_canal || 'WhatsApp'} (${o.intentos_de_contacto || 0} int.)</span>
+            </td>
+            <td class="p-4">
+              <div class="text-zinc-200">${o.ciudad || 'N/D'}, ${o.estado || ''}</div>
+              <div class="text-[11px] text-amber-400/90 font-medium max-w-[180px] truncate" title="${o.agencia_tealca || ''}">${o.agencia_tealca || 'Agencia pendiente'}</div>
+            </td>
+            <td class="p-4">
+              <div class="text-zinc-200 max-w-[180px] truncate" title="${o.producto}">${o.producto}</div>
+              <div class="text-[11px] font-mono text-zinc-400">Cant: ${o.cantidad}</div>
+            </td>
+            <td class="p-4 font-mono">
+              <div class="text-white font-bold">$${Number(o.monto_en_usd).toFixed(2)} <span class="text-[10px] text-zinc-400">${o.moneda_pago}</span></div>
+              <div class="text-[11px] text-emerald-400">Gan: +$${ganancia}</div>
+            </td>
+            <td class="p-4">${getEstadoBadgeHTML(o.estado_del_pedido)}</td>
+            <td class="p-4 font-mono text-[11px]">
+              <div class="text-zinc-200">Guía: ${o.guia_tealca || '—'}</div>
+              <div class="text-zinc-500">Drop: ${o.n_pedido_dropanas || '—'}</div>
+            </td>
+            <td class="p-4">
+              <span class="px-2 py-0.5 rounded bg-white/5 text-[10px] font-mono text-zinc-300 uppercase">${o.origen}</span>
+              <div class="text-[10px] text-zinc-500 truncate max-w-[120px] mt-0.5">${o.campana_o_anuncio || ''}</div>
+            </td>
+            <td class="p-4 text-center">
+              <button onclick="toggleBotRapido('${o.id}')" class="px-2.5 py-1 rounded-lg text-[11px] font-mono font-semibold border transition cursor-pointer ${
+                o.bot_activo
+                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20'
+                  : 'bg-rose-500/10 text-rose-400 border-rose-500/30 hover:bg-rose-500/20'
+              }">
+                ${o.bot_activo ? '🤖 ACTIVO' : '👤 ASESOR'}
+              </button>
+            </td>
+            <td class="p-4 text-right">
+              <button onclick="abrirDrawer('${o.id}')" class="p-2 rounded-xl bg-white/5 hover:bg-orange-500/20 text-zinc-300 hover:text-orange-400 transition cursor-pointer" title="Editar todos los campos">
+                <i data-lucide="edit-3" class="w-4 h-4"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderEscalados() {
+      const escalados = orders.filter(o => o.bot_activo === false);
+      const container = document.getElementById('escalados-list');
+
+      if (escalados.length === 0) {
+        container.innerHTML = `<div class="p-6 rounded-xl bg-white/[0.02] border border-white/5 text-center text-xs text-zinc-500">No hay clientes escalados pendientes en este momento. El Agente IA está gestionando todos los chats.</div>`;
+        return;
+      }
+
+      container.innerHTML = escalados.map(o => `
+        <div class="p-4 rounded-xl bg-rose-500/[0.06] border border-rose-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="font-mono font-bold text-orange-400 text-xs">${o.numero_pedido_shopify}</span>
+              <span class="font-bold text-white text-sm">${o.nombre} ${o.apellido}</span>
+              <span class="font-mono text-xs text-zinc-400">${o.telefono}</span>
+            </div>
+            <p class="text-xs text-zinc-300">"${o.ultimo_mensaje_del_cliente || o.notas}"</p>
+            <p class="text-[11px] text-rose-300 font-mono">Motivo: ${o.notas || 'Requiere atención personalizada'}</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <a href="https://wa.me/${String(o.telefono).replace(/[^0-9]/g, '')}" target="_blank" class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold flex items-center gap-1.5 transition">
+              <i data-lucide="phone-call" class="w-3.5 h-3.5"></i>
+              Llamar / WhatsApp
+            </a>
+            <button onclick="toggleBotRapido('${o.id}')" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-xs text-zinc-200 transition cursor-pointer">
+              Reactivar IA
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ==========================================
+    // 6. CREAR NUEVO PEDIDO & LIVE PREVIEW
+    // ==========================================
+    function actualizarLivePreview() {
+      const shopify = document.getElementById('np-shopify').value || '#SH-1050';
+      const nombre = document.getElementById('np-nombre').value || 'Carlos';
+      const apellido = document.getElementById('np-apellido').value || 'Mendoza';
+      const telefono = document.getElementById('np-telefono').value || '+584141234567';
+      const producto = document.getElementById('np-producto').value || 'Smartwatch Ultra Pro 2';
+      const cantidad = Number(document.getElementById('np-cantidad').value || 1);
+      const monto = Number(document.getElementById('np-monto').value || 45);
+      const costo = Number(document.getElementById('np-costo').value || 18);
+      const moneda = document.getElementById('np-moneda').value;
+      const agencia = document.getElementById('np-agencia').value || 'Sin asignar';
+      const ciudad = document.getElementById('np-ciudad').value || 'Valencia';
+      const estado = document.getElementById('np-estado').value || 'Carabobo';
+      const origen = document.getElementById('np-origen').value;
+      const estadoPedido = document.getElementById('np-estado-pedido').value;
+      const botActivo = document.getElementById('np-bot-activo').checked;
+
+      const ganancia = monto - costo;
+
+      document.getElementById('prev-shopify').textContent = shopify;
+      document.getElementById('prev-producto').textContent = `${producto} (x${cantidad})`;
+      document.getElementById('prev-cliente').textContent = `${nombre} ${apellido} • ${telefono}`;
+      document.getElementById('prev-agencia').textContent = agencia;
+      document.getElementById('prev-ubicacion').textContent = `${ciudad}, ${estado}`;
+      document.getElementById('prev-origen').textContent = origen;
+      document.getElementById('prev-monto').textContent = `$${monto.toFixed(2)} ${moneda}`;
+      document.getElementById('prev-ganancia').textContent = `${ganancia >= 0 ? '+' : ''}$${ganancia.toFixed(2)}`;
+      document.getElementById('prev-estado-badge').textContent = estadoPedido;
+
+      const botBadge = document.getElementById('prev-bot-badge');
+      botBadge.textContent = botActivo ? '🤖 IA ACTIVA' : '👤 PAUSADO';
+      botBadge.className = botActivo
+        ? 'px-2 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+        : 'px-2 py-0.5 rounded-full text-[10px] font-mono bg-rose-500/15 text-rose-400 border border-rose-500/30';
+    }
+
+    async function guardarNuevoPedido(e) {
+      e.preventDefault();
+      const monto = Number(document.getElementById('np-monto').value || 0);
+      const costo = Number(document.getElementById('np-costo').value || 0);
+
+      const nuevoPedido = {
+        numero_pedido_shopify: document.getElementById('np-shopify').value.trim(),
+        fecha_hora_pedido: new Date().toISOString(),
+        n_pedido_dropanas: document.getElementById('np-dropanas').value.trim(),
+        origen: document.getElementById('np-origen').value,
+        campana_o_anuncio: document.getElementById('np-campana').value.trim(),
+        fecha_entrega: document.getElementById('np-fecha-entrega').value || null,
+        nombre: document.getElementById('np-nombre').value.trim(),
+        apellido: document.getElementById('np-apellido').value.trim(),
+        telefono: document.getElementById('np-telefono').value.trim(),
+        cedula_o_rif: document.getElementById('np-cedula').value.trim(),
+        correo: document.getElementById('np-correo').value.trim(),
+        estado: document.getElementById('np-estado').value.trim(),
+        ciudad: document.getElementById('np-ciudad').value.trim(),
+        agencia_tealca: document.getElementById('np-agencia').value.trim(),
+        guia_tealca: document.getElementById('np-guia').value.trim(),
+        producto: document.getElementById('np-producto').value.trim(),
+        cantidad: Number(document.getElementById('np-cantidad').value || 1),
+        monto_en_usd: monto,
+        costo_producto: costo,
+        ganancia_estimada: Number((monto - costo).toFixed(2)),
+        moneda_pago: document.getElementById('np-moneda').value,
+        estado_del_pedido: document.getElementById('np-estado-pedido').value,
+        intentos_de_contacto: 0,
+        ultimo_contacto: new Date().toISOString(),
+        ultimo_canal: 'WhatsApp',
+        ultimo_mensaje_del_cliente: 'Pedido creado en CRM.',
+        notas: document.getElementById('np-notas').value.trim(),
+        bot_activo: document.getElementById('np-bot-activo').checked
+      };
+
+      if (supabaseClient) {
+        const { data, error } = await supabaseClient.from('pedidos_crm').insert([nuevoPedido]).select();
+        if (error) {
+          showToast(`Error Supabase: ${error.message}`, 'error');
+          return;
+        }
+        if (data) orders.unshift(data[0]);
+      } else {
+        nuevoPedido.id = String(Date.now());
+        orders.unshift(nuevoPedido);
+        guardarEnLocal();
+      }
+
+      dispararWebhookN8n('pedido_creado', nuevoPedido);
+      document.getElementById('form-nuevo-pedido').reset();
+      actualizarLivePreview();
+      refrescarTodaLaUI();
+      switchTab('pedidos');
+      showToast(`Pedido ${nuevoPedido.numero_pedido_shopify} guardado y enviado a n8n`, 'success');
+    }
+
+    // ==========================================
+    // 7. DRAWER LATERAL DE EDICIÓN COMPLETA
+    // ==========================================
+    function abrirDrawer(id) {
+      const o = orders.find(item => String(item.id) === String(id));
+      if (!o) return;
+
+      document.getElementById('ed-id').value = o.id;
+      document.getElementById('drw-header-shopify').textContent = o.numero_pedido_shopify;
+      document.getElementById('drw-header-estado').textContent = o.estado_del_pedido;
+      document.getElementById('drw-header-fecha').textContent = o.fecha_hora_pedido ? new Date(o.fecha_hora_pedido).toLocaleString('es-VE') : '';
+      document.getElementById('drw-btn-wa').href = `https://wa.me/${String(o.telefono).replace(/[^0-9]/g, '')}`;
+
+      document.getElementById('ed-bot-activo').checked = Boolean(o.bot_activo);
+      document.getElementById('ed-ultimo-contacto-info').textContent = `Canal: ${o.ultimo_canal || 'WhatsApp'} • ${o.intentos_de_contacto || 0} intentos`;
+      document.getElementById('ed-ultimo-mensaje-display').textContent = `"${o.ultimo_mensaje_del_cliente || 'Sin mensajes recientes'}"`;
+
+      document.getElementById('ed-nombre').value = o.nombre || '';
+      document.getElementById('ed-apellido').value = o.apellido || '';
+      document.getElementById('ed-telefono').value = o.telefono || '';
+      document.getElementById('ed-cedula').value = o.cedula_o_rif || '';
+      document.getElementById('ed-correo').value = o.correo || '';
+      document.getElementById('ed-estado').value = o.estado || '';
+      document.getElementById('ed-ciudad').value = o.ciudad || '';
+      document.getElementById('ed-agencia').value = o.agencia_tealca || '';
+      document.getElementById('ed-guia').value = o.guia_tealca || '';
+      document.getElementById('ed-dropanas').value = o.n_pedido_dropanas || '';
+      document.getElementById('ed-fecha-entrega').value = o.fecha_entrega || '';
+      document.getElementById('ed-estado-pedido').value = o.estado_del_pedido || 'Nuevo';
+      document.getElementById('ed-producto').value = o.producto || '';
+      document.getElementById('ed-cantidad').value = o.cantidad || 1;
+      document.getElementById('ed-monto').value = o.monto_en_usd || 0;
+      document.getElementById('ed-costo').value = o.costo_producto || 0;
+      document.getElementById('ed-moneda').value = o.moneda_pago || 'USD';
+      document.getElementById('ed-intentos').value = o.intentos_de_contacto || 0;
+      document.getElementById('ed-canal').value = o.ultimo_canal || 'WhatsApp';
+      document.getElementById('ed-origen').value = o.origen || 'landing';
+      document.getElementById('ed-campana').value = o.campana_o_anuncio || '';
+      document.getElementById('ed-notas').value = o.notas || '';
+
+      document.getElementById('drawer-backdrop').classList.remove('hidden');
+      document.getElementById('order-drawer').classList.remove('translate-x-full');
+      lucide.createIcons();
+    }
+
+    function cerrarDrawer() {
+      document.getElementById('drawer-backdrop').classList.add('hidden');
+      document.getElementById('order-drawer').classList.add('translate-x-full');
+    }
+
+    async function guardarEdicionDrawer(e) {
+      e.preventDefault();
+      const id = document.getElementById('ed-id').value;
+      const idx = orders.findIndex(item => String(item.id) === String(id));
+      if (idx === -1) return;
+
+      const monto = Number(document.getElementById('ed-monto').value || 0);
+      const costo = Number(document.getElementById('ed-costo').value || 0);
+
+      const updatedFields = {
+        nombre: document.getElementById('ed-nombre').value.trim(),
+        apellido: document.getElementById('ed-apellido').value.trim(),
+        telefono: document.getElementById('ed-telefono').value.trim(),
+        cedula_o_rif: document.getElementById('ed-cedula').value.trim(),
+        correo: document.getElementById('ed-correo').value.trim(),
+        estado: document.getElementById('ed-estado').value.trim(),
+        ciudad: document.getElementById('ed-ciudad').value.trim(),
+        agencia_tealca: document.getElementById('ed-agencia').value.trim(),
+        guia_tealca: document.getElementById('ed-guia').value.trim(),
+        n_pedido_dropanas: document.getElementById('ed-dropanas').value.trim(),
+        fecha_entrega: document.getElementById('ed-fecha-entrega').value || null,
+        estado_del_pedido: document.getElementById('ed-estado-pedido').value,
+        producto: document.getElementById('ed-producto').value.trim(),
+        cantidad: Number(document.getElementById('ed-cantidad').value || 1),
+        monto_en_usd: monto,
+        costo_producto: costo,
+        ganancia_estimada: Number((monto - costo).toFixed(2)),
+        moneda_pago: document.getElementById('ed-moneda').value,
+        intentos_de_contacto: Number(document.getElementById('ed-intentos').value || 0),
+        ultimo_canal: document.getElementById('ed-canal').value,
+        origen: document.getElementById('ed-origen').value,
+        campana_o_anuncio: document.getElementById('ed-campana').value.trim(),
+        notas: document.getElementById('ed-notas').value.trim(),
+        bot_activo: document.getElementById('ed-bot-activo').checked,
+        ultimo_contacto: new Date().toISOString()
+      };
+
+      if (supabaseClient) {
+        const { error } = await supabaseClient.from('pedidos_crm').update(updatedFields).eq('id', id);
+        if (error) {
+          showToast(`Error al actualizar: ${error.message}`, 'error');
+          return;
+        }
+      }
+
+      orders[idx] = { ...orders[idx], ...updatedFields };
+      guardarEnLocal();
+      dispararWebhookN8n('pedido_actualizado', orders[idx]);
+      refrescarTodaLaUI();
+      cerrarDrawer();
+      showToast('Pedido actualizado y sincronizado', 'success');
+    }
+
+    function registrarIntentoContacto() {
+      const inputIntentos = document.getElementById('ed-intentos');
+      inputIntentos.value = Number(inputIntentos.value || 0) + 1;
+      showToast('Intento de contacto incrementado (+1)', 'info');
+    }
+
+    async function toggleBotRapido(id) {
+      const idx = orders.findIndex(item => String(item.id) === String(id));
+      if (idx === -1) return;
+
+      const nuevoEstado = !orders[idx].bot_activo;
+      if (supabaseClient) {
+        await supabaseClient.from('pedidos_crm').update({ bot_activo: nuevoEstado }).eq('id', id);
+      }
+
+      orders[idx].bot_activo = nuevoEstado;
+      guardarEnLocal();
+      dispararWebhookN8n('toggle_bot', orders[idx]);
+      refrescarTodaLaUI();
+      showToast(nuevoEstado ? 'Agente IA reactivado para este cliente' : 'Bot pausado — Escalado a Asesor', nuevoEstado ? 'success' : 'warning');
+    }
+
+    function escalarPedidoDesdeDrawer() {
+      document.getElementById('ed-bot-activo').checked = false;
+      const notasEl = document.getElementById('ed-notas');
+      notasEl.value = `${notasEl.value} | ESCALADO MANUAL A LLAMADA`.trim();
+      showToast('Marcado para escalamiento. Haz clic en Guardar Cambios.', 'warning');
+    }
+
+    // ==========================================
+    // 8. SIMULACIONES DE WEBHOOK & EXPORTACIÓN
+    // ==========================================
+    async function dispararWebhookN8n(evento, payload) {
+      const webhookUrl = localStorage.getItem('dropcrm_n8n_webhook');
+      if (!webhookUrl) return;
+      try {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ evento, timestamp: new Date().toISOString(), pedido: payload })
+        });
+      } catch (e) {
+        console.warn('Webhook n8n no accesible desde navegador:', e);
+      }
+    }
+
+    function simularWebhookEntrante() {
+      const nombres = ['Luis', 'Andrea', 'Roberto', 'Gabriela', 'Daniel'];
+      const apellidos = ['Fernández', 'Morales', 'Salazar', 'Briceño', 'Pacheco'];
+      const ciudades = [
+        { estado: 'Miranda', ciudad: 'Los Teques', agencia: 'Tealca La Hoyada' },
+        { estado: 'Aragua', ciudad: 'Maracay', agencia: 'Tealca Av. Las Delicias' },
+        { estado: 'Táchira', ciudad: 'San Cristóbal', agencia: 'Tealca Barrio Obrero' },
+        { estado: 'Anzoátegui', ciudad: 'Lechería', agencia: 'Tealca Av. Principal' }
+      ];
+
+      const randNom = nombres[Math.floor(Math.random() * nombres.length)];
+      const randApe = apellidos[Math.floor(Math.random() * apellidos.length)];
+      const randLoc = ciudades[Math.floor(Math.random() * ciudades.length)];
+      const randNum = Math.floor(1052 + Math.random() * 900);
+
+      const simulatedOrder = {
+        id: String(Date.now()),
+        numero_pedido_shopify: `#SH-${randNum}`,
+        fecha_hora_pedido: new Date().toISOString(),
+        nombre: randNom,
+        apellido: randApe,
+        telefono: `+58414${Math.floor(1000000 + Math.random() * 9000000)}`,
+        cedula_o_rif: '',
+        correo: `${randNom.toLowerCase()}@gmail.com`,
+        estado: randLoc.estado,
+        ciudad: randLoc.ciudad,
+        agencia_tealca: randLoc.agencia,
+        producto: 'Proyector Portátil Magcubic 4K',
+        cantidad: 1,
+        monto_en_usd: 65.00,
+        moneda_pago: 'USD',
+        estado_del_pedido: 'Nuevo',
+        intentos_de_contacto: 1,
+        ultimo_contacto: new Date().toISOString(),
+        ultimo_canal: 'WhatsApp',
+        ultimo_mensaje_del_cliente: 'Hola, acabo de comprar en Shopify. Confirmo envío por Tealca.',
+        guia_tealca: '',
+        n_pedido_dropanas: `DRP-${Math.floor(60000 + Math.random() * 9000)}`,
+        costo_producto: 26.00,
+        ganancia_estimada: 39.00,
+        origen: 'anuncio',
+        campana_o_anuncio: 'SCALE_PROYECTOR_4K',
+        notas: 'Ingresado vía Webhook Shopify → n8n.',
+        fecha_entrega: '',
+        bot_activo: true
+      };
+
+      orders.unshift(simulatedOrder);
+      guardarEnLocal();
+      refrescarTodaLaUI();
+      showToast(`Nuevo pedido Shopify ${simulatedOrder.numero_pedido_shopify} recibido`, 'success');
+    }
+
+    function simularRespuestaClienteWhatsApp() {
+      const activo = orders.find(o => o.bot_activo);
+      if (!activo) {
+        showToast('No hay pedidos con bot activo para simular', 'warning');
+        return;
+      }
+      activo.cedula_o_rif = activo.cedula_o_rif || 'V-25.331.908';
+      activo.estado_del_pedido = 'Confirmado';
+      activo.intentos_de_contacto = (activo.intentos_de_contacto || 0) + 1;
+      activo.ultimo_contacto = new Date().toISOString();
+      activo.ultimo_mensaje_del_cliente = `Listo, mi cédula es ${activo.cedula_o_rif}. Confirmo mi pedido para retirar en ${activo.agencia_tealca || 'Tealca Centro'}.`;
+      activo.notas = 'Confirmado automáticamente por Agente IA (FFLLMAPI).';
+
+      guardarEnLocal();
+      refrescarTodaLaUI();
+      showToast(`Agente IA confirmó el pedido ${activo.numero_pedido_shopify}`, 'success');
+    }
+
+    function exportarCSV() {
+      if (orders.length === 0) return;
+      const headers = Object.keys(orders[0]);
+      const csvRows = [
+        headers.join(','),
+        ...orders.map(row => headers.map(field => JSON.stringify(row[field] ?? '')).join(','))
+      ];
+      const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pedidos_crm_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      showToast('Archivo CSV exportado correctamente', 'success');
+    }
+
+    // ==========================================
+    // 9. NOTIFICACIONES TOAST ELEGANTES
+    // ==========================================
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const colors = {
+        success: 'border-emerald-500/40 bg-emerald-950/90 text-emerald-200',
+        warning: 'border-amber-500/40 bg-amber-950/90 text-amber-200',
+        error: 'border-rose-500/40 bg-rose-950/90 text-rose-200',
+        info: 'border-orange-500/40 bg-carbon-900/95 text-zinc-100'
+      };
+      const toast = document.createElement('div');
+      toast.className = `pointer-events-auto px-4 py-3 rounded-xl border backdrop-blur-md shadow-2xl text-xs font-medium flex items-center gap-2.5 transition-all duration-300 ${colors[type] || colors.info}`;
+      toast.innerHTML = `<span class="w-2 h-2 rounded-full bg-orange-400"></span><span>${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+  </script>
+</body>
+</html>
